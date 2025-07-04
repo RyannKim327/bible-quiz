@@ -16,7 +16,7 @@ export default function Base() {
 
   const reset = () => {
     console.log("Reset");
-    if (time < totalTime) setTime((prev) => prev - 5);
+    if (time < totalTime) setTime((prev) => (prev >= 5 ? prev - 5 : 0));
     return;
   };
 
@@ -58,14 +58,22 @@ export default function Base() {
         setNumber(0);
         setQuestion(questions[pattern[0]]);
       }
-    }, 25000);
+    }, 10000);
   }, [pattern]);
 
   // const delay = (ms: number) =>
   //   new Promise((resolve) => setTimeout(resolve, ms * 1000));
 
   useEffect(() => {
-    if (n < 0 || n >= pattern.length) return;
+    // TODO: Time Control
+
+    if (n < 0) return;
+
+    if (pattern.length <= n) {
+      setGameover(true);
+      setTime(0);
+      return;
+    }
 
     const interval = setInterval(() => {
       setTime((prev) => {
@@ -81,16 +89,19 @@ export default function Base() {
   }, [n, toggleLoad, pattern]);
 
   const answer = () => {
-    if (gameover) {
+    // TODO: To clear all stuffs
+    if (gameover && pattern.length) {
       setPattern([]);
       setNumber(0);
       setqAnswer("");
       setScore(0);
-      setTime(60);
+      setTime(totalTime);
       setGameover(false);
       setToggleLoad(Math.floor(Math.random() * 999999999) + 1);
       return;
     }
+
+    // TODO: Check if the answer is correct or not
     if (n < pattern.length && question) {
       const verif = core(question, qAnswer, questions);
 
@@ -121,18 +132,20 @@ export default function Base() {
     >
       <div className="flex justify-between">
         <h3 className="text-center text-xl">
-          {n >= 0 ? `Question #${n + 1}` : "Bible Quiz Game"}
+          {n >= 0 ? `Question #${n + 1} ` : "Bible Quiz Game"}
         </h3>
         <h3 className="text-center text-xl">Time: {time}</h3>
       </div>
       <div className="flex flex-col p-10 md:p-0 h-full w-full justify-center items-center box-border">
         <h3 className="text-xl md:text-3xl text-center">
-          {!gameover ? (question?.qe ?? "Please Read") : `Your Score: ${score}`}
+          {!gameover
+            ? (question?.qe ?? "Please Read")
+            : `Your Score: ${score} `}
         </h3>
         <h3 className="text-md md:text-lg italic text-center">
           {!gameover
             ? (question?.qt ??
-              `This was an identification Bible Game, the english translation was based on KJV and, the tagalog is based on Magandang Balita Bibliya with some modification which based on the translation from the KJV, I have personal reason why, its something related to bible also, which you may notice. If the answers are noun, please answer based on the actual characters, it is case sensitive. You only have ${totalTime} seconds, and may deducted based on your behaviour. Also, the system may add some time randomly as consideration for answers. Please don't cheat. By the way If ever you have some complains about the game, you may message us on facebook.com/MPOP.2016.`)
+              `This was an identification Bible Game, the english translation was based on KJV and, the tagalog is based on Magandang Balita Bibliya with some modification which based on the translation from the KJV, I have personal reason why, its something related to bible also, which you may notice.If the answers are noun, please answer based on the actual characters, it is case sensitive.You only have ${totalTime} seconds, and may deducted based on your behaviour.Also, the system may add some time randomly as consideration for answers.Please don't cheat. By the way If ever you have some complains about the game, you may message us on facebook.com/MPOP.2016.`)
             : ""}
         </h3>
       </div>
@@ -162,7 +175,7 @@ export default function Base() {
       <input
         className="w-full h-2 bg-slate-700 rounded-lg range-sm my-2"
         readOnly={true}
-        value={(time / 60) * 100}
+        value={(time / totalTime) * 100}
         type="range"
       />
     </div>
